@@ -1,0 +1,13 @@
+langchain-core
+langchain-text-splitters
+langchain-community
+openai      # If you're using OpenAI models
+tiktoken    # If you're using OpenAI/chat/text tokenizers
+chromadb    # For local vector database (optional, for RAG)
+sentence-transformers
+flask
+pandas
+prometheus_client
+langchain-astradb
+langchain-huggingface
+uvicorn

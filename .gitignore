@@ -1,0 +1,4 @@
+.env
+venv/
+SQLAIproject.egg-info/
+RAG_chatbot/__pycache__/

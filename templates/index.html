@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Flipkart Chatbot</title>
+    <meta charset="UTF-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+
+  <body style="font-family: Arial, sans-serif; margin: 20px;">
+    <h2>🛍️ Flipkart Chatbot</h2>
+    <p>Ask me anything about products!</p>
+
+    <div
+      id="messageFormeight"
+      style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: auto; margin-bottom: 10px;"
+    ></div>
+
+    <form id="messageArea">
+      <input
+        type="text"
+        id="text"
+        name="msg"
+        placeholder="Type your message..."
+        autocomplete="off"
+        required
+        style="width: 75%; padding: 8px;"
+      />
+      <button
+        type="submit"
+        id="send"
+        style="padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer;"
+      >
+        Send
+      </button>
+    </form>
+
+    <script>
+      $(document).ready(function () {
+        $("#messageArea").on("submit", function (event) {
+          event.preventDefault();
+          const date = new Date();
+          const str_time = date.getHours() + ":" + date.getMinutes();
+          var rawText = $("#text").val();
+
+          // Show user message
+          var userHtml =
+            '<div style="text-align: right; margin-bottom: 10px;"><strong>You:</strong> ' +
+            rawText +
+            ' <span style="color: gray; font-size: 0.8em;">' +
+            str_time +
+            "</span></div>";
+
+          $("#text").val("");
+          $("#messageFormeight").append(userHtml);
+
+          // Send to FastAPI backend
+          $.ajax({
+            data: { msg: rawText },
+            type: "POST",
+            url: "/get",
+          }).done(function (data) {
+            var botHtml =
+              '<div style="text-align: left; margin-bottom: 10px;"><strong>Bot:</strong> ' +
+              data +
+              ' <span style="color: gray; font-size: 0.8em;">' +
+              str_time +
+              "</span></div>";
+            $("#messageFormeight").append($.parseHTML(botHtml));
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

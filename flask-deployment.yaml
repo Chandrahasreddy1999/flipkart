@@ -1,0 +1,179 @@
+# ============================================================
+# 1️⃣  Deployment: FastAPI Application
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  labels:
+    app: fastapi
+spec:
+  replicas: 3                               # 3 pods for load balancing
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi-container
+          image: ghcr.io/company/fastapi-app:v1.0.0   # Example private image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+
+          # Load environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: fastapi-config
+            - secretRef:
+                name: fastapi-secrets
+
+          # Resource management
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+
+          # Health Checks — ensures pod is working and ready
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Mount a log volume (temporary)
+          volumeMounts:
+            - name: app-logs
+              mountPath: /var/log/app
+
+      # Pod-level settings
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+
+      # Security — run as non-root user
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      # Restart policy for resilience
+      restartPolicy: Always
+---
+# ============================================================
+# 2️⃣  ConfigMap: Non-sensitive configuration
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-config
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  MODEL_PATH: "/app/models/model.bin"
+
+---
+# ============================================================
+# 3️⃣  Secret: Sensitive values (encoded)
+# ============================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fastapi-secrets
+type: Opaque
+data:
+  OPENAI_API_KEY: bXlfc2VjcmV0X2tleQ==     # echo -n "my_secret_key" | base64
+  DATABASE_URL: cG9zdGdyZXM6Ly9yb290OnBhc3NAZGI6NTQzMg==
+
+---
+# ============================================================
+# 4️⃣  Service: Expose app internally and externally
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  labels:
+    app: fastapi
+spec:
+  type: LoadBalancer                      # Expose via cloud load balancer
+  selector:
+    app: fastapi
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80                            # External port
+      targetPort: 5000                    # Container port
+
+---
+# ============================================================
+# 5️⃣  Horizontal Pod Autoscaler (HPA)
+# ============================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fastapi-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fastapi-app
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+# ============================================================
+# 6️⃣  (Optional) NetworkPolicy — Restrict traffic
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fastapi-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: fastapi
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus           # Allow only Prometheus to scrape metrics
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5000
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0             # Allow outbound internet access
+      ports:
+        - protocol: TCP
+          port: 443
