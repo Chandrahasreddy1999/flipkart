@@ -44,7 +44,7 @@ async def get_response(msg: str = Form(...)):
     )["answer"]
     return response
 
-# Prometheus metrics
+# Prometheus metricss
 @app.get("/metrics", response_class=PlainTextResponse)
 async def metrics():
     return PlainTextResponse(generate_latest().decode("utf-8"), media_type="text/plain")
