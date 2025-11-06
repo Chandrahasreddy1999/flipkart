@@ -2,3 +2,4 @@
 venv/
 SQLAIproject.egg-info/
 RAG_chatbot/__pycache__/
+logs/
