@@ -16,10 +16,7 @@ import sys
 
 class RAGChainBuilder:
     def __init__(self, vector_store):
-        """
-        Builds a retrieval-augmented generation (RAG) chain using
-        NVIDIA API, LangChain retriever, and chat history.
-        """
+        
         logger.info("Initializing RAGChainBuilder...")  
         try:
             self.vector_store = vector_store
@@ -32,15 +29,13 @@ class RAGChainBuilder:
             self.model = ChatNVIDIA(model=Config.RAGMODEL, temperature=0.3)
             self.history_store = {}
 
-            logger.info("✅ RAGChainBuilder initialized successfully.")
+            logger.info("RAGChainBuilder initialized successfully.")
 
         except Exception as e:
             raise CustomException(e, sys)
 
     def get_history(self, session_id: str) -> BaseChatMessageHistory:
-        """
-        Returns or initializes chat history for a given session ID.
-        """
+        
         logger.info(f"Fetching chat history for session_id: {session_id}")
         try:
             if session_id not in self.history_store:
@@ -51,10 +46,7 @@ class RAGChainBuilder:
             raise CustomException(e, sys)
 
     def build_chain(self):
-        """
-        Builds a full RAG pipeline chain with context-aware retrieval
-        and concise question answering.
-        """
+        
         logger.info("Building RAG chain...")  
         try:
             retriever = self.vector_store.as_retriever(search_kwargs={"k": 3})
@@ -93,7 +85,7 @@ class RAGChainBuilder:
             quest_ans_chain = create_stuff_documents_chain(self.model, qa_prompt)
             rag_chain = create_retrieval_chain(history_aware_retriever, quest_ans_chain)
 
-            logger.info("✅ RAG chain successfully created.")
+            logger.info("RAG chain successfully created.")
 
             # Wrap chain with session-based chat history
             return RunnableWithMessageHistory(

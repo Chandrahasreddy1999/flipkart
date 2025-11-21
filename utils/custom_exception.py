@@ -19,10 +19,7 @@ def error_message_detail(error, error_detail: sys):
 
 
 class CustomException(Exception):
-    """
-    Custom Exception that provides detailed traceback info
-    and logs automatically.
-    """
+    
 
     def __init__(self, error_message, error_detail: sys):
         # Generate the detailed message

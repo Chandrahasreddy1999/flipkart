@@ -7,17 +7,14 @@ from utils.custom_exception import CustomException
 from utils.logger import logger
 
 
-# --------------------------------------------------------
+
 # Load environment variables
-# --------------------------------------------------------
+
 load_dotenv()
 
 
 class Config:
-    """
-    Simple configuration loader.
-    Loads environment variables from .env and logs at the start.
-    """
+  
     try:
         logger.info("Loading environment variables from .env file...")  
 
@@ -32,8 +29,9 @@ class Config:
 
         embeddings = "sentence-transformers/all-MiniLM-L6-v2"
         RAGMODEL = "qwen/qwen2.5-coder-32b-instruct"
+        DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "flipkart_product_review.csv")
 
-        logger.info("✅ Environment variables loaded successfully.") 
+        logger.info("Environment variables loaded successfully.") 
 
     except Exception as e:
         raise CustomException(e, sys)

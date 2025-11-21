@@ -29,7 +29,7 @@ class DataIngestor:
                 token=Config.ASTRA_DB_APPLICATION_TOKEN,
                 namespace=Config.ASTRA_DB_KEYSPACE
             )
-            logger.info("✅ AstraDB Vector Store initialized successfully.")
+            logger.info("AstraDB Vector Store initialized successfully.")
 
         except Exception as e:
             raise CustomException(e, sys)
@@ -44,7 +44,7 @@ class DataIngestor:
                 logger.info("Returning existing AstraDB vector store instance.")
                 return self.vstore
 
-            data_path = "D:/Projects/LLM_GenAI/Fastapi/data/flipkart_product_review.csv"
+            data_path = Config.DATA_PATH
             logger.info(f"Loading data from: {data_path}")
 
             docs = DataConverter(data_path).convert()
@@ -62,13 +62,5 @@ class DataIngestor:
         except Exception as e:
             raise CustomException(e, sys)
 
-if __name__ == "__main__":
-    try:
-        logger.info("🧪 Starting DataIngestor self-test...")
-        ingestor = DataIngestor()
-        vstore = ingestor.ingest(load_existing=True)
-        logger.info("✅ DataIngestor self-test completed successfully.")
-    except Exception as e:
-        logger.critical(f"❌ DataIngestor self-test failed: {e}")
-        raise CustomException(e, sys)
+
 

@@ -30,7 +30,7 @@ class DataConverter:
                 for _, row in df.iterrows()
             ]
 
-            logger.info(f"✅ Conversion complete. Total documents created: {len(docs)}")
+            logger.info(f"Conversion complete. Total documents created: {len(docs)}")
             return docs
 
         except FileNotFoundError:
